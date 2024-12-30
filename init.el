@@ -172,7 +172,8 @@
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
   (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+  (evil-set-initial-state 'dashboard-mode 'normal)
+  (evil-set-initial-state 'tetris-mode 'insert))
 
 (use-package evil-collection
   :after evil
@@ -199,12 +200,59 @@
 
 (use-package magit)
 
+(defun efs/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . efs/lsp-mode-setup)
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  :config
+  (lsp-enable-which-key-integration t))
+
+;; Execution needed on new machine.
+;; Install this language server with M-x lsp-install-server RET ts-ls RET.
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+(use-package lsp-treemacs
+  :after lsp)
+
+(use-package evil-nerd-commenter
+  :bind ("C-/" . evilnc-comment-or-uncomment-lines))
+
+;; Slime config!
+(load (expand-file-name "~/quicklisp/slime-helper.el"))
+(setq inferior-lisp-program "sbcl")
+
 ;; evil s-expression bindings
 ;; 
 ;;common lisp config
-;;js/ts, c, clojure config
-
-
+;;js, c, clojure config
 
 
 
@@ -216,7 +264,7 @@
  '(custom-safe-themes
    '("faf642d1511fb0cb9b8634b2070a097656bdb5d88522657370eeeb11baea4a1c" "fbf73690320aa26f8daffdd1210ef234ed1b0c59f3d001f342b9c0bbf49f531c" "712dda0818312c175a60d94ba676b404fc815f8c7e6c080c9b4061596c60a1db" "d41229b2ff1e9929d0ea3b4fde9ed4c1e0775993df9d998a3cdf37f2358d386b" "7b602fe4a324dc18877dde647eb6f2ff9352566ce16d0b888bfcb870d0abfd70" "937401a2e532f2c8c881b6b3f20d9d4b6b9405bccf72ea6289c9d3f4507eb1ab" "2e7dc2838b7941ab9cabaa3b6793286e5134f583c04bde2fba2f4e20f2617cf7" "a75aff58f0d5bbf230e5d1a02169ac2fbf45c930f816f3a21563304d5140d245" default))
  '(package-selected-packages
-   '(evil-magit magit counsel-projectile projectile evil-collection evil all-the-icons helpful ivy which-key modus-themes doom-modeline)))
+   '(evil-nerd-commenter lsp-treemacs lsp-ui company-box typescript-mode lsp-mode evil-magit magit counsel-projectile projectile evil-collection evil all-the-icons helpful ivy which-key modus-themes doom-modeline)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
