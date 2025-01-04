@@ -1,11 +1,17 @@
+;; Add this line, if init.el is separated into different files
+;;(add-to-list 'load-path '"~/.emacs.d/modules")
+
 (defun my-protect-init-file ()
   "Make `init.el` read-only to prevent accidental edits."
-  (when (and buffer-file-name
-             (string-equal (file-truename buffer-file-name)
-                           (file-truename user-init-file)))
+  (when (my-current-file-init-p)
     (read-only-mode 1)))
 
-(add-hook 'find-file-hook 'my-protect-init-file)
+(defun my-current-file-init-p ()
+  (and buffer-file-name
+             (string-equal (file-truename buffer-file-name)
+                           (file-truename user-init-file))))
+
+(add-hook 'find-file-hook #'my-protect-init-file)
 
 (setq inhibit-startup-message t)
 
@@ -56,7 +62,7 @@
 (use-package all-the-icons)
 
 ;;Use this if all-the-icons package does not resolve the problem.
-;;There will be icons missing after new installation. Install NerdFontsSymbolsOnly from nerd-fonts.
+;;Install NerdFontsSymbolsOnly from nerd-fonts.
 ;;Link: https://github.com/ryanoasis/nerd-fonts/releases
 ;;
 ;;Change needed on new machine.
@@ -188,7 +194,6 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
   ;; Machine specific!
   (let ((projects-path "~/Desktop/Programming"))
     (when (file-directory-p projects-path)
@@ -249,25 +254,11 @@
 (load (expand-file-name "~/quicklisp/slime-helper.el"))
 (setq inferior-lisp-program "sbcl")
 
+(projectile-register-project-type 'common-lisp '("*.asd" "*.asdf"))
+
+;;Debugging Emacs
+(use-package command-log-mode
+  :commands command-log-mode)
+
 ;; evil s-expression bindings
-;; 
-;;common lisp config
 ;;js, c, clojure config
-
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("faf642d1511fb0cb9b8634b2070a097656bdb5d88522657370eeeb11baea4a1c" "fbf73690320aa26f8daffdd1210ef234ed1b0c59f3d001f342b9c0bbf49f531c" "712dda0818312c175a60d94ba676b404fc815f8c7e6c080c9b4061596c60a1db" "d41229b2ff1e9929d0ea3b4fde9ed4c1e0775993df9d998a3cdf37f2358d386b" "7b602fe4a324dc18877dde647eb6f2ff9352566ce16d0b888bfcb870d0abfd70" "937401a2e532f2c8c881b6b3f20d9d4b6b9405bccf72ea6289c9d3f4507eb1ab" "2e7dc2838b7941ab9cabaa3b6793286e5134f583c04bde2fba2f4e20f2617cf7" "a75aff58f0d5bbf230e5d1a02169ac2fbf45c930f816f3a21563304d5140d245" default))
- '(package-selected-packages
-   '(evil-nerd-commenter lsp-treemacs lsp-ui company-box typescript-mode lsp-mode evil-magit magit counsel-projectile projectile evil-collection evil all-the-icons helpful ivy which-key modus-themes doom-modeline)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
