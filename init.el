@@ -99,6 +99,11 @@
 (setq auto-save-file-name-transforms
       '((".*" "~/.emacs.d/autosave/" t)))
 
+(use-package emacs
+  :custom
+  (enable-recursive-minibuffers t)
+  (minibuffer-depth-indicate-mode t))
+
 (use-package which-key
   :defer 0
   :diminish which-key-mode
@@ -143,7 +148,7 @@
 
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-ibuffer)
+	 ("C-x b" . counsel-switch-buffer)
 	 ("C-x C-f" . counsel-find-file)
 	 :map minibuffer-local-map
 	 ("C-r" . 'counsel-minibuffer-history))
@@ -250,8 +255,17 @@
 (use-package evil-nerd-commenter
   :bind ("C-/" . evilnc-comment-or-uncomment-lines))
 
-;; Slime config!
-(load (expand-file-name "~/quicklisp/slime-helper.el"))
+;; Sly config!
+(use-package sly)
+
+(use-package ac-sly
+  :after sly)
+
+(add-hook 'sly-mode-hook 'set-up-sly-ac)
+(add-hook 'sly-repl-mode-hook 'set-up-sly-ac)
+(eval-after-load 'auto-complete
+  '(add-to-list 'ac-modes 'sly-mrepl-mode))
+
 (setq inferior-lisp-program "sbcl")
 
 (projectile-register-project-type 'common-lisp '("*.asd" "*.asdf"))
@@ -260,5 +274,6 @@
 (use-package command-log-mode
   :commands command-log-mode)
 
+;; Also maybe try Slime instead of Sly
 ;; evil s-expression bindings
 ;;js, c, clojure config
