@@ -67,7 +67,6 @@
 ;;
 ;;Change needed on new machine.
 (use-package doom-modeline
-  :ensure t
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 10)))
 
@@ -191,7 +190,6 @@
   :config
   (evil-collection-init))
 
-
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
@@ -210,70 +208,63 @@
 
 (use-package magit)
 
-(defun efs/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-  (lsp-headerline-breadcrumb-mode))
-
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook (lsp-mode . efs/lsp-mode-setup)
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  :config
-  (lsp-enable-which-key-integration t))
-
-;; Execution needed on new machine.
-;; Install this language server with M-x lsp-install-server RET ts-ls RET.
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2))
-
 (use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
+  (company-idle-delay 0.0)
+  :config
+  (message "Company loaded!!!!!")
+  (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
+  (define-key prog-mode-map (kbd "<tab>") #'company-indent-or-complete-common)
+  (add-hook 'emacs-lisp-mode-hook #'company-mode))
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
 
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
-
-(use-package lsp-treemacs
-  :after lsp)
-
 (use-package evil-nerd-commenter
   :bind ("C-/" . evilnc-comment-or-uncomment-lines))
 
-;; Sly config!
-(use-package sly)
+;; SLIME config!
+(use-package slime
+  :config
+  (message "Slime loaded!!!!")
+  (slime-setup '(slime-fancy slime-company)))
 
-(use-package ac-sly
-  :after sly)
-
-(add-hook 'sly-mode-hook 'set-up-sly-ac)
-(add-hook 'sly-repl-mode-hook 'set-up-sly-ac)
-(eval-after-load 'auto-complete
-  '(add-to-list 'ac-modes 'sly-mrepl-mode))
+(use-package slime-company
+  :after (slime company)
+  :config
+  (message "Slime-Company loaded!!!!!!!!")
+  (setq slime-company-display-arglist t))
 
 (setq inferior-lisp-program "sbcl")
 
 (projectile-register-project-type 'common-lisp '("*.asd" "*.asdf"))
 
-;;Debugging Emacs
-(use-package command-log-mode
-  :commands command-log-mode)
+;; (defun efs/lsp-mode-setup ()
+;;   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+;;   (lsp-headerline-breadcrumb-mode))
+
+;; (use-package lsp-mode
+;;   :commands (lsp lsp-deferred)
+;;   :hook (lsp-mode . efs/lsp-mode-setup)
+;;   :init
+;;   (setq lsp-keymap-prefix "C-c l")
+;;   :config
+;;   (lsp-enable-which-key-integration t))
+
+;; ;; Execution needed on new machine.
+;; ;; Install this language server with M-x lsp-install-server RET ts-ls RET.
+;; (use-package typescript-mode
+;;   :mode "\\.ts\\'"
+;;   :hook (typescript-mode . lsp-deferred)
+;;   :config
+;;   (setq typescript-indent-level 2))
+
+;; (use-package lsp-ui
+;;   :hook (lsp-mode . lsp-ui-mode)
+;;   :custom
+;;   (lsp-ui-doc-position 'bottom))
 
 ;; Also maybe try Slime instead of Sly
 ;; evil s-expression bindings
-;;js, c, clojure config
+;; C  config
