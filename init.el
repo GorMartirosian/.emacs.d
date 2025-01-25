@@ -77,16 +77,23 @@
 
 ;;Font
 ;;Change needed on new machine.
-(defvar my-font-name "FiraCode Nerd Font Mono"
-  "Text font to use.")
-(defvar my-font-size 10 "Font size to use in points (for example, 10).") 
-(defvar my-font (format "%s-%f" my-font-name my-font-size))
+(defconst font-name "FiraCode Nerd Font Mono"
+  "Name of the font to use.")
 
-(defun font-exists-p (font)
-  "Check if the FONT exists." (and (display-graphic-p) (not (null (x-list-fonts font)))))
+(defconst font-size 10
+  "Font size to use in points.")
 
-(when (font-exists-p my-font)
-  (set-frame-font my-font nil t))
+(defun font-spec ()
+  "Construct the full font specification."
+  (format "%s-%d" font-name font-size))
+
+(defun font-available-p (font)
+  "Check if FONT exists on the current system."
+  (and (display-graphic-p) (not (null (x-list-fonts font)))))
+
+(let ((font (font-spec)))
+  (if (font-available-p font)
+      (set-frame-font font nil t)))
 
 ;;Change Emacs backup file location
 (setq backup-directory-alist
@@ -126,17 +133,14 @@
   :diminish
   :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
+         ("<tab>" . ivy-alt-done)
          ("C-l" . ivy-alt-done)
          ("C-j" . ivy-next-line)
          ("C-k" . ivy-previous-line)
          :map ivy-switch-buffer-map
          ("C-k" . ivy-previous-line)
          ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-	 :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
+         ("C-d" . ivy-switch-buffer-kill))
   :config
   (ivy-mode 1))
 
@@ -182,8 +186,7 @@
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
   (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal)
-  (evil-set-initial-state 'tetris-mode 'insert))
+  (evil-set-initial-state 'dashboard-mode 'normal))
 
 (use-package evil-collection
   :after evil
@@ -225,6 +228,7 @@
   :bind ("C-/" . evilnc-comment-or-uncomment-lines))
 
 ;; SLIME config!
+;; IMPORTANT NOTE: INSTALL COMMON LISP USING SCOOP ON WINDOWS
 (use-package slime
   :config
   (message "Slime loaded!!!!")
@@ -234,9 +238,8 @@
   :after (slime company)
   :config
   (message "Slime-Company loaded!!!!!!!!")
-  (setq slime-company-display-arglist t))
-
-(setq inferior-lisp-program "sbcl")
+  (setq slime-company-display-arglist t)
+  (setq inferior-lisp-program "sbcl"))
 
 (projectile-register-project-type 'common-lisp '("*.asd" "*.asdf"))
 
