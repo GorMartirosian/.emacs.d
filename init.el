@@ -197,6 +197,7 @@
   :diminish projectile-mode
   :config (projectile-mode)
   :custom ((projectile-completion-system 'ivy))
+  :hook (emacs-startup . projectile-load-known-projects)
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
@@ -234,6 +235,9 @@
   (message "Slime loaded!!!!")
   (slime-setup '(slime-fancy slime-company)))
 
+(use-package eros
+  :hook (emacs-lisp-mode . (lambda () (eros-mode 1))))
+
 (use-package slime-company
   :after (slime company)
   :config
@@ -268,6 +272,5 @@
 ;;   :custom
 ;;   (lsp-ui-doc-position 'bottom))
 
-;; Also maybe try Slime instead of Sly
 ;; evil s-expression bindings
 ;; C  config
