@@ -11,7 +11,10 @@
              (string-equal (file-truename buffer-file-name)
                            (file-truename user-init-file))))
 
-(add-hook 'find-file-hook #'my-protect-init-file)
+(defun my-make-current-file-read-only ()
+  (read-only-mode 1))
+
+(add-hook 'find-file-hook #'my-make-current-file-read-only)
 
 (setq inhibit-startup-message t)
 
@@ -52,28 +55,12 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-
-;; NOTE: The first time you load your configuration on a new machine, you'll
-;; need to run the following command interactively so that mode line icons
-;; display correctly:
-;;
-;; M-x all-the-icons-install-fonts
-
-(use-package all-the-icons)
-
-;;Use this if all-the-icons package does not resolve the problem.
-;;Install NerdFontsSymbolsOnly from nerd-fonts.
-;;Link: https://github.com/ryanoasis/nerd-fonts/releases
-;;
-;;Change needed on new machine.
-(use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 10)))
-
-;;Theme
-
-(use-package modus-themes)
-(load-theme 'modus-vivendi-tinted :no-confirm)
+;; Install Symbols Nerd Fonts Mono (Symbols Nerd Font) and
+;; Firacode Nerd Font Mono from the website. 
+;; You can use M-x nerd-icons-install-fonts to install
+;; Symbols Nerd Fonts Mono for you.
+;; OS specific: for Windows you’ll need to
+;; manually install the font after you used this function.
 
 ;;Font
 ;;Change needed on new machine.
@@ -94,6 +81,32 @@
 (let ((font (font-spec)))
   (if (font-available-p font)
       (set-frame-font font nil t)))
+
+;;Theme
+
+;; (use-package modus-themes)
+;; (load-theme 'modus-vivendi-tinted :no-confirm)
+
+(use-package doom-themes
+  :ensure t
+  :config
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-challenger-deep t)
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (nerd-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+;;Change needed on new machine.
+(use-package doom-modeline
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 10)))
 
 ;;Change Emacs backup file location
 (setq backup-directory-alist
