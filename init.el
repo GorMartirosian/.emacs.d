@@ -1,5 +1,9 @@
 ;; Add this line, if init.el is separated into different files
 ;;(add-to-list 'load-path '"~/.emacs.d/modules")
+(defvar my-is-linux-system (eq system-type 'gnu/linux))
+(defvar my-is-windows-system (eq system-type 'windows-nt))
+
+(when my-is-windows-system (setq find-program "C:/cygwin64/bin/find.exe"))
 
 (defun my-protect-init-file ()
   "Make `init.el` read-only to prevent accidental edits."
@@ -206,22 +210,27 @@
   :config
   (evil-collection-init))
 
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :hook (emacs-startup . projectile-load-known-projects)
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; Machine specific!
-  (let ((projects-path "~/Desktop/Programming"))
-    (when (file-directory-p projects-path)
-      (setq projectile-project-search-path (directory-files projects-path t))))
-  (setq projectile-switch-project-action #'projectile-dired))
+(require 'project)
 
-(use-package counsel-projectile
-  :config (counsel-projectile-mode))
+(defcustom project-root-markers
+  '("package.lisp" "project.clj" ".git" "deps.edn" "shadow-cljs.edn")
+  "Files or directories that indicate the root of a project."
+  :type '(repeat string)
+  :group 'project)
+
+(defun project-root-p (path)
+  "Check if the current PATH has any of the project root markers."
+  (catch 'found
+    (dolist (marker project-root-markers)
+      (when (file-exists-p (concat path marker))
+        (throw 'found marker)))))
+
+(defun project-find-root (path)
+  "Search up the PATH for `project-root-markers'."
+  (when-let ((root (locate-dominating-file path #'project-root-p))) ; goes up the path directory
+    (cons 'transient (expand-file-name root))))
+
+(add-to-list 'project-find-functions #'project-find-root)
 
 (use-package magit)
 
@@ -248,8 +257,13 @@
   (message "Slime loaded!!!!")
   (slime-setup '(slime-fancy slime-company)))
 
-(use-package eros
-  :hook (emacs-lisp-mode . (lambda () (eros-mode 1))))
+(defun my-slime-mode-keybindings ()
+  "Used inside slime-repl-mode-hook"
+  (evil-define-key 'normal slime-repl-mode-map
+    (kbd "C-j") 'slime-repl-forward-input
+    (kbd "C-k") 'slime-repl-backward-input))
+
+(add-hook 'slime-repl-mode-hook #'my-slime-mode-keybindings)
 
 (use-package slime-company
   :after (slime company)
@@ -257,33 +271,6 @@
   (message "Slime-Company loaded!!!!!!!!")
   (setq slime-company-display-arglist t)
   (setq inferior-lisp-program "sbcl"))
-
-(projectile-register-project-type 'common-lisp '("*.asd" "*.asdf"))
-
-;; (defun efs/lsp-mode-setup ()
-;;   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-;;   (lsp-headerline-breadcrumb-mode))
-
-;; (use-package lsp-mode
-;;   :commands (lsp lsp-deferred)
-;;   :hook (lsp-mode . efs/lsp-mode-setup)
-;;   :init
-;;   (setq lsp-keymap-prefix "C-c l")
-;;   :config
-;;   (lsp-enable-which-key-integration t))
-
-;; ;; Execution needed on new machine.
-;; ;; Install this language server with M-x lsp-install-server RET ts-ls RET.
-;; (use-package typescript-mode
-;;   :mode "\\.ts\\'"
-;;   :hook (typescript-mode . lsp-deferred)
-;;   :config
-;;   (setq typescript-indent-level 2))
-
-;; (use-package lsp-ui
-;;   :hook (lsp-mode . lsp-ui-mode)
-;;   :custom
-;;   (lsp-ui-doc-position 'bottom))
 
 ;; evil s-expression bindings
 ;; C  config
