@@ -1,30 +1,31 @@
 ;; Add this line, if init.el is separated into different files
 ;;(add-to-list 'load-path '"~/.emacs.d/modules")
-(defvar my-is-linux-system (eq system-type 'gnu/linux))
-(defvar my-is-windows-system (eq system-type 'windows-nt))
+(defvar my/is-linux-system (eq system-type 'gnu/linux))
+(defvar my/is-windows-system (eq system-type 'windows-nt))
 
-(when my-is-windows-system (setq find-program "C:/cygwin64/bin/find.exe"))
+(when my/is-windows-system
+  (setq find-program "C:/cygwin64/bin/find.exe"))
 
-(defun my-protect-init-file ()
+(defun my/protect-init-file ()
   "Make `init.el` read-only to prevent accidental edits."
-  (when (my-current-file-init-p)
+  (when (my/current-file-init-p)
     (read-only-mode 1)))
 
-(defun my-current-file-init-p ()
+(defun my/current-file-init-p ()
   (and buffer-file-name
              (string-equal (file-truename buffer-file-name)
                            (file-truename user-init-file))))
 
-(defun my-make-current-file-read-only ()
+(defun my/make-current-file-read-only ()
   (read-only-mode 1))
 
-(add-hook 'find-file-hook #'my-make-current-file-read-only)
+(add-hook 'find-file-hook #'my/make-current-file-read-only)
 
 (setq inhibit-startup-message t)
 
 (setq initial-frame-alist
-      '((fullscreen . fullboth)
-        (undecorated . t)))
+      '((fullscreen . maximized)))
+;; (undecorated . nil) can be added to remove the top panel 
 
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
@@ -126,6 +127,11 @@
   :custom
   (enable-recursive-minibuffers t)
   (minibuffer-depth-indicate-mode t))
+
+(use-package vlf
+  :config
+  (require 'vlf-setup)
+  (setopt vlf-application 'dont-ask))
 
 (use-package which-key
   :defer 0
@@ -257,13 +263,13 @@
   (message "Slime loaded!!!!")
   (slime-setup '(slime-fancy slime-company)))
 
-(defun my-slime-mode-keybindings ()
+(defun my/slime-mode-keybindings ()
   "Used inside slime-repl-mode-hook"
   (evil-define-key 'normal slime-repl-mode-map
     (kbd "C-j") 'slime-repl-forward-input
     (kbd "C-k") 'slime-repl-backward-input))
 
-(add-hook 'slime-repl-mode-hook #'my-slime-mode-keybindings)
+(add-hook 'slime-repl-mode-hook #'my/slime-mode-keybindings)
 
 (use-package slime-company
   :after (slime company)
