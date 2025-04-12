@@ -87,6 +87,11 @@
   (if (font-available-p font)
       (set-frame-font font nil t)))
 
+;; Also install fonts using M-x all-the-icons-install-fonts
+(use-package all-the-icons
+  :if (display-graphic-p))
+
+
 ;;Theme
 
 ;; (use-package modus-themes)
@@ -277,6 +282,45 @@
   (message "Slime-Company loaded!!!!!!!!")
   (setq slime-company-display-arglist t)
   (setq inferior-lisp-program "sbcl"))
+
+(use-package ultra-scroll
+  :vc (:url "https://github.com/jdtsmith/ultra-scroll"
+	    :rev :newest)
+  :init
+  (setq scroll-conservatively 101 ; important!
+        scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+
+(use-package dashboard
+  :ensure t
+  :init
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-center-content t)
+  (setq dashboard-vertically-center-content t)
+  :config
+  (dashboard-setup-startup-hook))
+
+;; For treemacs to work, got to the all-the-icons github
+;;  page and download the fonts manually.
+(use-package treemacs
+  :config
+  (treemacs-git-mode 'deferred)
+  (setopt treemacs-indet-guide-mode 'line)
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode 'always))
+
+(use-package treemacs-evil
+  :after (treemacs evil))
+
+(use-package treemacs-magit
+  :after (treemacs magit))
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once))
+
+(use-package treemacs-all-the-icons)
 
 ;; evil s-expression bindings
 ;; C  config
