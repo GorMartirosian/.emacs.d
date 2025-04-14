@@ -2,6 +2,7 @@
 ;;(add-to-list 'load-path '"~/.emacs.d/modules")
 (defvar my/is-linux-system (eq system-type 'gnu/linux))
 (defvar my/is-windows-system (eq system-type 'windows-nt))
+(defvar my/is-macos-system (eq system-type 'darwin))
 
 (when my/is-windows-system
   (setq find-program "C:/cygwin64/bin/find.exe"))
@@ -36,7 +37,11 @@
 ;;OS specific
 ;;Change needed on new machine.
 (setq delete-by-moving-to-trash t)
-(setq trashcan-dirname "~/Recycle Bin")
+(cond
+ (my/is-macos-system
+  (setq trash-directory "~/.Trash"))
+ (my/is-windows-system
+  (setq trashcan-dirname (expand-file-name "~/Recycle Bin"))))
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
