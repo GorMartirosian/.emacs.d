@@ -1,5 +1,10 @@
 ;; Add this line, if init.el is separated into different files
 ;;(add-to-list 'load-path '"~/.emacs.d/modules")
+
+(setopt auto-save-interval 20)
+(setopt auto-save-visited-mode t)
+(setopt auto-save-visited-interval 0.1) 
+
 (defvar my/is-linux-system (eq system-type 'gnu/linux))
 (defvar my/is-windows-system (eq system-type 'windows-nt))
 (defvar my/is-macos-system (eq system-type 'darwin))
@@ -213,7 +218,7 @@
   :config
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-
+  
   ;; Use visual line motions even outside of visual-line-mode buffers
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
@@ -288,6 +293,12 @@
   (setq slime-company-display-arglist t)
   (setq inferior-lisp-program "sbcl"))
 
+(use-package clojure-mode)
+
+(use-package cider
+  :after clojure-mode
+  :hook (clojure-mode . cider-mode))
+
 (use-package ultra-scroll
   :vc (:url "https://github.com/jdtsmith/ultra-scroll"
 	    :rev :newest)
@@ -327,5 +338,21 @@
 
 (use-package treemacs-all-the-icons)
 
-;; evil s-expression bindings
-;; C  config
+;; Machine specific: do not forget to install the LSP servers.
+(use-package eglot
+  :after (clojure-mode)
+  :init (setopt eglot-autoshutdown t)
+  :hook ((clojure-mode . eglot-ensure)))
+
+;; Machine specific: Install emacs-lsp-booster, add to the $PATH.
+;;   
+;; (use-package eglot-booster
+;;   :vc (:url "https://github.com/jdtsmith/eglot-booster.git"
+;; 	    :rev :newest)
+;;   :after eglot
+;;   :config
+;;   (eglot-booster-mode)
+;;   ;; TODO refactor 
+;;   (add-to-list 'eglot-server-programs
+;;                `(clojure-mode . ,(eglot-alternatives
+;; 				  '(("emacs-lsp-booster" "clojure-lsp"))))))
