@@ -5,6 +5,8 @@
 (setopt auto-save-visited-mode t)
 (setopt auto-save-visited-interval 0.1) 
 
+(fset 'yes-or-no-p 'y-or-n-p)
+
 (defvar my/is-linux-system (eq system-type 'gnu/linux))
 (defvar my/is-windows-system (eq system-type 'windows-nt))
 (defvar my/is-macos-system (eq system-type 'darwin))
@@ -108,7 +110,6 @@
 ;; (load-theme 'modus-vivendi-tinted :no-confirm)
 
 (use-package doom-themes
-  :ensure t
   :config
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
@@ -188,6 +189,7 @@
   (ivy-rich-mode 1))
 
 (use-package counsel
+  :demand t
   :bind (("M-x" . counsel-M-x)
 	 ("C-x b" . counsel-switch-buffer)
 	 ("C-x C-f" . counsel-find-file)
@@ -200,6 +202,7 @@
   (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
 
 (use-package helpful
+  :demand t
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -219,6 +222,21 @@
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   
+  (defvar my/leader-map (make-sparse-keymap)
+    "My custom leader keymap.")
+
+  (define-key evil-normal-state-map (kbd "SPC") my/leader-map)
+
+  (define-key my/leader-map (kbd "b n") #'next-buffer)
+  (define-key my/leader-map (kbd "b p") #'previous-buffer)
+
+  (with-eval-after-load 'counsel
+    (define-key my/leader-map (kbd "b s") #'counsel-switch-buffer)
+    (define-key my/leader-map (kbd "h f") #'counsel-describe-function)
+    (define-key my/leader-map (kbd "h v") #'counsel-describe-variable))
+
+  (with-eval-after-load 'helpful
+    (define-key my/leader-map (kbd "h k") #'helpful-key))
   ;; Use visual line motions even outside of visual-line-mode buffers
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
@@ -309,7 +327,6 @@
   (ultra-scroll-mode 1))
 
 (use-package dashboard
-  :ensure t
   :init
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-center-content t)
