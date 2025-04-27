@@ -189,7 +189,6 @@
   (ivy-rich-mode 1))
 
 (use-package counsel
-  :demand t
   :bind (("M-x" . counsel-M-x)
 	 ("C-x b" . counsel-switch-buffer)
 	 ("C-x C-f" . counsel-find-file)
@@ -202,7 +201,6 @@
   (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
 
 (use-package helpful
-  :demand t
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -213,6 +211,12 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
+
+(defun my/set-additional-general-purpose-keybindings ()
+  ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
+
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -220,29 +224,13 @@
   (setq evil-want-C-u-scroll t)
   :config
   (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  
-  (defvar my/leader-map (make-sparse-keymap)
-    "My custom leader keymap.")
+  (keymap-set evil-insert-state-map "C-g" 'evil-normal-state)
 
-  (define-key evil-normal-state-map (kbd "SPC") my/leader-map)
-
-  (define-key my/leader-map (kbd "b n") #'next-buffer)
-  (define-key my/leader-map (kbd "b p") #'previous-buffer)
-
-  (with-eval-after-load 'counsel
-    (define-key my/leader-map (kbd "b s") #'counsel-switch-buffer)
-    (define-key my/leader-map (kbd "h f") #'counsel-describe-function)
-    (define-key my/leader-map (kbd "h v") #'counsel-describe-variable))
-
-  (with-eval-after-load 'helpful
-    (define-key my/leader-map (kbd "h k") #'helpful-key))
-  ;; Use visual line motions even outside of visual-line-mode buffers
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  (my/set-additional-general-purpose-keybindings)
 
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
+
 
 (use-package evil-collection
   :after evil
@@ -278,9 +266,8 @@
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0)
   :config
-  (message "Company loaded!!!!!")
-  (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
-  (define-key prog-mode-map (kbd "<tab>") #'company-indent-or-complete-common)
+  (keymap-set company-active-map "<tab>" 'company-complete-selection)
+  (keymap-set prog-mode-map "<tab>" 'company-indent-or-complete-common)
   (add-hook 'emacs-lisp-mode-hook #'company-mode))
 
 (use-package company-box
@@ -289,25 +276,22 @@
 (use-package evil-nerd-commenter
   :bind ("C-/" . evilnc-comment-or-uncomment-lines))
 
-;; SLIME config!
-;; IMPORTANT NOTE: INSTALL COMMON LISP USING SCOOP ON WINDOWS
-(use-package slime
-  :config
-  (message "Slime loaded!!!!")
-  (slime-setup '(slime-fancy slime-company)))
-
-(defun my/slime-mode-keybindings ()
-  "Used inside slime-repl-mode-hook"
+(defun my/set-slime-repl-mode-keybindings ()
   (evil-define-key 'normal slime-repl-mode-map
     (kbd "C-j") 'slime-repl-forward-input
     (kbd "C-k") 'slime-repl-backward-input))
 
-(add-hook 'slime-repl-mode-hook #'my/slime-mode-keybindings)
+;; SLIME config!
+;; IMPORTANT NOTE: INSTALL COMMON LISP USING SCOOP ON WINDOWS
+(use-package slime
+  :after evil
+  :config
+  (slime-setup '(slime-fancy slime-company))
+  (my/set-slime-repl-mode-keybindings))
 
 (use-package slime-company
   :after (slime company)
   :config
-  (message "Slime-Company loaded!!!!!!!!")
   (setq slime-company-display-arglist t)
   (setq inferior-lisp-program "sbcl"))
 
@@ -361,15 +345,3 @@
   :init (setopt eglot-autoshutdown t)
   :hook ((clojure-mode . eglot-ensure)))
 
-;; Machine specific: Install emacs-lsp-booster, add to the $PATH.
-;;   
-;; (use-package eglot-booster
-;;   :vc (:url "https://github.com/jdtsmith/eglot-booster.git"
-;; 	    :rev :newest)
-;;   :after eglot
-;;   :config
-;;   (eglot-booster-mode)
-;;   ;; TODO refactor 
-;;   (add-to-list 'eglot-server-programs
-;;                `(clojure-mode . ,(eglot-alternatives
-;; 				  '(("emacs-lsp-booster" "clojure-lsp"))))))
