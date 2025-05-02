@@ -70,6 +70,7 @@
    (package-install 'use-package))
 
 (require 'use-package)
+
 (setq use-package-always-ensure t)
 
 ;; Install Symbols Nerd Fonts Mono (Symbols Nerd Font) and
@@ -237,7 +238,7 @@
   :config
   (evil-collection-init))
 
-(require 'project)
+(use-package project)
 
 (defcustom project-root-markers
   '("package.lisp" "project.clj" ".git" "deps.edn" "shadow-cljs.edn")
@@ -259,7 +260,28 @@
 
 (add-to-list 'project-find-functions #'project-find-root)
 
-(use-package magit)
+(use-package magit
+  :config
+  (setq ediff-split-window-function 'split-window-horizontally)
+  (with-eval-after-load 'ediff
+    (custom-set-faces
+     '(ediff-current-diff-A ((t (:background "#4B1818"))))
+     '(ediff-fine-diff-A    ((t (:background "#6F1313" :weight bold))))
+
+     '(ediff-current-diff-B ((t (:background "#267326")))) 
+     '(ediff-fine-diff-B    ((t (:background "#2E8B2E" :weight bold))))
+
+     '(ediff-current-diff-C ((t (:background "#264F78"))))
+     '(ediff-fine-diff-C    ((t (:background "#3B6EA8" :weight bold))))
+
+     '(ediff-even-diff-A    ((t (:background "#1e1e1e"))))
+     '(ediff-even-diff-B    ((t (:background "#1e1e1e"))))
+     '(ediff-odd-diff-A     ((t (:background "#252526"))))
+     '(ediff-odd-diff-B     ((t (:background "#252526")))))))
+
+(use-package diff-hl
+  :config
+  (global-diff-hl-mode))
 
 (use-package company
   :custom
@@ -344,4 +366,3 @@
   :after (clojure-mode)
   :init (setopt eglot-autoshutdown t)
   :hook ((clojure-mode . eglot-ensure)))
-
