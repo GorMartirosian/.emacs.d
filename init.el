@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t; -*-
+
 ;; Add this line, if init.el is separated into different files
 ;;(add-to-list 'load-path '"~/.emacs.d/modules")
 
@@ -366,10 +368,3 @@
   :after (clojure-mode)
   :init (setopt eglot-autoshutdown t)
   :hook ((clojure-mode . eglot-ensure)))
-
-(use-package blamer
-  :custom
-  (blamer-idle-time 0.3)
-  (blamer-min-offset 70)
-  :config
-  (global-blamer-mode 1))
