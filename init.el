@@ -176,12 +176,7 @@
   :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
          ("<tab>" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
          :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
          ("C-d" . ivy-switch-buffer-kill))
   :config
   (ivy-mode 1))
@@ -302,8 +297,8 @@
 
 (defun my/set-slime-repl-mode-keybindings ()
   (evil-define-key 'normal slime-repl-mode-map
-    (kbd "C-j") 'slime-repl-forward-input
-    (kbd "C-k") 'slime-repl-backward-input))
+    (kbd "C-n") 'slime-repl-forward-input
+    (kbd "C-p") 'slime-repl-backward-input))
 
 ;; SLIME config!
 ;; IMPORTANT NOTE: INSTALL COMMON LISP USING SCOOP ON WINDOWS
