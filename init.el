@@ -325,6 +325,17 @@
   :after clojure-mode
   :hook (clojure-mode . cider-mode))
 
+(defun my/config-clojure-refactor-mode ()
+    (clj-refactor-mode 1)
+    (yas-minor-mode 1))
+
+(use-package clj-refactor
+  :after clojure-mode
+  :init
+  (setq cljr-add-ns-to-blank-clj-files nil)
+  :hook
+  (clojure-mode . #'my/config-clojure-refactor-mode))
+
 (use-package ultra-scroll
   :vc (:url "https://github.com/jdtsmith/ultra-scroll"
 	    :rev :newest)
@@ -368,3 +379,10 @@
   :after (clojure-mode)
   :init (setopt eglot-autoshutdown t)
   :hook ((clojure-mode . eglot-ensure)))
+
+(use-package xref
+  :demand t)
+
+(use-package golden-ratio
+  :config
+  (golden-ratio-mode 1))
