@@ -142,11 +142,6 @@
 (setq auto-save-file-name-transforms
       '((".*" "~/.emacs.d/autosave/" t)))
 
-(use-package emacs
-  :custom
-  (enable-recursive-minibuffers t)
-  (minibuffer-depth-indicate-mode t))
-
 (use-package vlf
   :config
   (require 'vlf-setup)
@@ -228,7 +223,6 @@
 
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
-
 
 (use-package evil-collection
   :after evil
@@ -377,7 +371,3 @@
 
 (use-package xref
   :demand t)
-
-(use-package golden-ratio
-  :config
-  (golden-ratio-mode 1))
