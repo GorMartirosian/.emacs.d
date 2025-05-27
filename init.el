@@ -229,6 +229,14 @@
   :config
   (evil-collection-init))
 
+(use-package general
+  :after (evil evil-collection)
+  :config
+  (general-define-key
+   :states 'normal
+   "L" 'next-buffer
+   "H" 'previous-buffer))
+
 (use-package project)
 
 (defcustom project-root-markers
@@ -291,6 +299,9 @@
 
 (defun my/set-slime-repl-mode-keybindings ()
   (evil-define-key 'normal slime-repl-mode-map
+    (kbd "C-n") 'slime-repl-forward-input
+    (kbd "C-p") 'slime-repl-backward-input)
+  (evil-define-key 'insert slime-repl-mode-map
     (kbd "C-n") 'slime-repl-forward-input
     (kbd "C-p") 'slime-repl-backward-input))
 
