@@ -1,5 +1,9 @@
 ;;; -*- lexical-binding: t; -*-
 
+(setq custom-file (concat user-emacs-directory "custom.el"))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
 ;; Add this line, if init.el is separated into different files
 ;;(add-to-list 'load-path '"~/.emacs.d/modules")
 
@@ -87,7 +91,7 @@
 (defconst font-name "FiraCode Nerd Font Mono"
   "Name of the font to use.")
 
-(defconst font-size 10
+(defconst font-size (if my/is-windows-system 10 13)
   "Font size to use in points.")
 
 (defun font-spec ()
@@ -110,7 +114,7 @@
 ;;Theme
 
 ;; (use-package modus-themes)
-;; (load-theme 'modus-vivendi-tinted :no-confirm)
+;; (load-theme 'modus-vivendi-deuteranopia :no-confirm)
 
 (use-package doom-themes
   :config
@@ -215,6 +219,7 @@
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   (setq evil-want-C-u-scroll t)
+  (setq evil-want-minibuffer t)
   :config
   (evil-mode 1)
   (keymap-set evil-insert-state-map "C-g" 'evil-normal-state)
@@ -228,14 +233,6 @@
   :after evil
   :config
   (evil-collection-init))
-
-(use-package general
-  :after (evil evil-collection)
-  :config
-  (general-define-key
-   :states 'normal
-   "L" 'next-buffer
-   "H" 'previous-buffer))
 
 (use-package project)
 
