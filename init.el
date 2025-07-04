@@ -217,21 +217,22 @@
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-  (keymap-set evil-normal-state-map "C-n" 'ivy-next-line)
-  (keymap-set evil-normal-state-map "C-p" 'ivy-previous-line)
-
-
-  (keymap-set evil-insert-state-map "C-n" 'ivy-next-line)
-  (keymap-set evil-insert-state-map "C-p" 'ivy-previous-line)
+  (with-eval-after-load 'ivy
+    (keymap-set evil-normal-state-map "C-n" 'ivy-next-line)
+    (keymap-set evil-normal-state-map "C-p" 'ivy-previous-line)
+    (keymap-set evil-insert-state-map "C-n" 'ivy-next-line)
+    (keymap-set evil-insert-state-map "C-p" 'ivy-previous-line))
 
   (keymap-set evil-normal-state-map "C-w C-w" 'evil-window-next)
 
   (define-prefix-command 'my/evil-insert-C-w-map)
   (define-key evil-insert-state-map (kbd "C-w") 'my/evil-insert-C-w-map)
-  (define-key my/evil-insert-C-w-map (kbd "C-w") #'evil-window-next))
+  (define-key my/evil-insert-C-w-map (kbd "C-w") #'evil-window-next)
+
+  (add-hook 'find-file-hook #'(lambda ()
+				(setq evil-want-minibuffer nil))))
 
 (use-package evil
-  :after ivy
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
