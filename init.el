@@ -11,6 +11,9 @@
 (setopt auto-save-visited-mode t)
 (setopt auto-save-visited-interval 0.1) 
 
+(setq enable-recursive-minibuffers t)
+(minibuffer-depth-indicate-mode 1)
+
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (defvar my/is-linux-system (eq system-type 'gnu/linux))
@@ -212,9 +215,23 @@
 (defun my/set-additional-general-purpose-keybindings ()
   ;; Use visual line motions even outside of visual-line-mode buffers
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  (keymap-set evil-normal-state-map "C-n" 'ivy-next-line)
+  (keymap-set evil-normal-state-map "C-p" 'ivy-previous-line)
+
+
+  (keymap-set evil-insert-state-map "C-n" 'ivy-next-line)
+  (keymap-set evil-insert-state-map "C-p" 'ivy-previous-line)
+
+  (keymap-set evil-normal-state-map "C-w C-w" 'evil-window-next)
+
+  (define-prefix-command 'my/evil-insert-C-w-map)
+  (define-key evil-insert-state-map (kbd "C-w") 'my/evil-insert-C-w-map)
+  (define-key my/evil-insert-C-w-map (kbd "C-w") #'evil-window-next))
 
 (use-package evil
+  :after ivy
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
