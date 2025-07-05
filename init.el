@@ -16,6 +16,8 @@
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
+(setq org-hide-emphasis-markers t)
+
 (defvar my/is-linux-system (eq system-type 'gnu/linux))
 (defvar my/is-windows-system (eq system-type 'windows-nt))
 (defvar my/is-macos-system (eq system-type 'darwin))
@@ -41,8 +43,8 @@
 (setq inhibit-startup-message t)
 
 (setq initial-frame-alist
-      '((fullscreen . maximized)))
-;; (undecorated . nil) can be added to remove the top panel 
+      '((fullscreen . maximized)
+	(undecorated . t)))
 
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
