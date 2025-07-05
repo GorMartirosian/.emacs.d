@@ -229,8 +229,10 @@
   (define-key evil-insert-state-map (kbd "C-w") 'my/evil-insert-C-w-map)
   (define-key my/evil-insert-C-w-map (kbd "C-w") #'evil-window-next)
 
-  (add-hook 'find-file-hook #'(lambda ()
-				(setq evil-want-minibuffer nil))))
+  (advice-add 'counsel-find-file :before #'(lambda ()
+					     (setq evil-want-minibuffer nil)))
+  (advice-add 'counsel-M-x :before #'(lambda ()
+					    (setq evil-want-minibuffer t))))
 
 (use-package evil
   :init
