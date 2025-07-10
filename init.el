@@ -11,8 +11,14 @@
 (setopt auto-save-visited-mode t)
 (setopt auto-save-visited-interval 0.1) 
 
-(setq enable-recursive-minibuffers t)
-(minibuffer-depth-indicate-mode 1)
+(use-package emacs
+  :custom
+  ;; Enable mouse right click in buffer
+  (context-menu-mode t)
+  (enable-recursive-minibuffers t)
+  (minibuffer-depth-indicate-mode 1)
+  ;; Only useful commands for current buffer are shown in M-x
+  (read-extended-command-predicate #'command-completion-default-include-p))
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -84,37 +90,17 @@
 
 (setq use-package-always-ensure t)
 
-;; Install Symbols Nerd Fonts Mono (Symbols Nerd Font) and
-;; Firacode Nerd Font Mono from the website. 
-;; You can use M-x nerd-icons-install-fonts to install
-;; Symbols Nerd Fonts Mono for you.
-;; OS specific: for Windows you’ll need to
-;; manually install the font after you used this function.
+;; Font
+;; Change needed on new machine. Install the necessary fonts.
+(set-face-attribute 'default nil :family "FiraCode Nerd Font Mono" :height 120 :weight 'medium)
 
-;;Font
-;;Change needed on new machine.
-(defconst font-name "FiraCode Nerd Font Mono"
-  "Name of the font to use.")
+(add-hook 'prog-mode-hook
+          #'(lambda ()
+	      (set-face-attribute 'font-lock-comment-face nil :family "DejaVuSansM Nerd Font" :slant 'italic :foreground "cyan4")))
 
-(defconst font-size (if my/is-windows-system 10 13)
-  "Font size to use in points.")
-
-(defun font-spec ()
-  "Construct the full font specification."
-  (format "%s-%d" font-name font-size))
-
-(defun font-available-p (font)
-  "Check if FONT exists on the current system."
-  (and (display-graphic-p) (not (null (x-list-fonts font)))))
-
-(let ((font (font-spec)))
-  (if (font-available-p font)
-      (set-frame-font font nil t)))
-
-;; Also install fonts using M-x all-the-icons-install-fonts
-(use-package all-the-icons
-  :if (display-graphic-p))
-
+(add-hook 'help-mode-hook
+          #'(lambda ()
+	      (face-remap-add-relative 'default :family "DejaVuSansM Nerd Font" :weight 'bold)))
 
 ;;Theme
 
@@ -160,7 +146,7 @@
   :defer 0
   :diminish which-key-mode
   :config
-  (which-key-mode)
+  (which-key-mode 1)
   (setq which-key-idle-delay 1))
 
 (column-number-mode)
@@ -175,43 +161,47 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("<tab>" . ivy-alt-done)
-         :map ivy-switch-buffer-map
-         ("C-d" . ivy-switch-buffer-kill))
-  :config
-  (ivy-mode 1))
-
-(use-package ivy-rich
-  :after (ivy counsel)
-  :config
-  (ivy-rich-mode 1))
-
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-switch-buffer)
-	 ("C-x C-f" . counsel-find-file)
-	 :map minibuffer-local-map
-	 ("C-r" . 'counsel-minibuffer-history))
+(use-package vertico
   :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  (vertico-count 10)    ; Display at most this many matches
+  (vertico-mode 1))
+
+(use-package savehist
+  :init
+  (savehist-mode))
+
+(use-package orderless
   :config
-  (counsel-mode 1)
-  (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
+  (setq read-file-name-completion-ignore-case t
+	read-buffer-completion-ignore-case t
+	completion-ignore-case t)
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
+(use-package marginalia
+  :custom
+  (marginalia-mode 1))
+
+;; (use-package nerd-icons-completion ;; TODO
+;;   :after (marginalia all-the-icons)
+;;   :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+;;   :config
+;;   (all-the-icons-completion-mode 1))
+
+(use-package consult
+  :custom
+  (consult-mode 1))
+
+;; Prescient, Consult, Embark, Corfu (or Cape)
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
+  :init
+  (global-set-key (kbd "C-h f") #'helpful-callable)
+  (global-set-key (kbd "C-h v") #'helpful-variable)
+  (global-set-key (kbd "C-h k") #'helpful-key)
+  (global-set-key (kbd "C-h x") #'helpful-command))
 
 
 (defun my/set-additional-general-purpose-keybindings ()
@@ -219,22 +209,24 @@
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-  (with-eval-after-load 'ivy
-    (keymap-set evil-normal-state-map "C-n" 'ivy-next-line)
-    (keymap-set evil-normal-state-map "C-p" 'ivy-previous-line)
-    (keymap-set evil-insert-state-map "C-n" 'ivy-next-line)
-    (keymap-set evil-insert-state-map "C-p" 'ivy-previous-line))
+  (with-eval-after-load 'vertico
 
-  (keymap-set evil-normal-state-map "C-w C-w" 'evil-window-next)
+    (defvar my/extended-minibuffer-keymap
+      (let ((map (make-sparse-keymap)))
+	(define-key map (kbd "C-n") #'vertico-next)
+	(define-key map (kbd "C-p") #'vertico-previous)
+	;; TODO change for Embark!!!!!!!!
+	map))
+
+    (add-to-list 'emulation-mode-map-alists `((my/is-minibuffer-extension-map-enabled . ,my/extended-minibuffer-keymap)))
+
+    (add-hook 'minibuffer-setup-hook
+	      #'(lambda ()
+		  (setq-local my/is-minibuffer-extension-map-enabled t))))
 
   (define-prefix-command 'my/evil-insert-C-w-map)
   (define-key evil-insert-state-map (kbd "C-w") 'my/evil-insert-C-w-map)
-  (define-key my/evil-insert-C-w-map (kbd "C-w") #'evil-window-next)
-
-  (advice-add 'counsel-find-file :before #'(lambda ()
-					     (setq evil-want-minibuffer nil)))
-  (advice-add 'counsel-M-x :before #'(lambda ()
-					    (setq evil-want-minibuffer t))))
+  (define-key my/evil-insert-C-w-map (kbd "C-w") #'evil-window-next))
 
 (use-package evil
   :init
@@ -281,6 +273,7 @@
 (use-package magit
   :config
   (setq ediff-split-window-function 'split-window-horizontally)
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (with-eval-after-load 'ediff
     (custom-set-faces
      '(ediff-current-diff-A ((t (:background "#4B1818"))))
@@ -391,7 +384,7 @@
 (use-package treemacs-icons-dired
   :hook (dired-mode . treemacs-icons-dired-enable-once))
 
-(use-package treemacs-all-the-icons)
+(use-package treemacs-nerd-icons)
 
 ;; Machine specific: do not forget to install the LSP servers.
 (use-package eglot
