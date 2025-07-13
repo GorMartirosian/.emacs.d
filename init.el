@@ -17,6 +17,10 @@
   (context-menu-mode t)
   (enable-recursive-minibuffers t)
   (minibuffer-depth-indicate-mode 1)
+
+  (tab-always-indent 'complete)
+  (completion-cycle-threshold 3)
+
   ;; Only useful commands for current buffer are shown in M-x
   (read-extended-command-predicate #'command-completion-default-include-p))
 
@@ -170,6 +174,10 @@
   :init
   (savehist-mode))
 
+(use-package recentf
+  :init
+  (recentf-mode 1))
+
 (use-package orderless
   :config
   (setq read-file-name-completion-ignore-case t
@@ -190,10 +198,15 @@
 ;;   (all-the-icons-completion-mode 1))
 
 (use-package consult
+  :after recentf
   :custom
-  (consult-mode 1))
-
-;; Prescient, Consult, Embark, Corfu (or Cape)
+  (consult-mode 1)
+  :config
+  (global-set-key (kbd "C-x b") #'consult-buffer)
+  ;; (global-set-key (kbd "C-F") #'consult-grep) TODO
+  ;; also add C-N and C-P for vertico next/previous group ?
+  ;; also add C-d to delete a buffer
+  )
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -204,7 +217,7 @@
   (global-set-key (kbd "C-h x") #'helpful-command))
 
 
-(defun my/set-additional-general-purpose-keybindings ()
+(defun my/set-additional-keybindings ()
   ;; Use visual line motions even outside of visual-line-mode buffers
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
@@ -215,7 +228,6 @@
       (let ((map (make-sparse-keymap)))
 	(define-key map (kbd "C-n") #'vertico-next)
 	(define-key map (kbd "C-p") #'vertico-previous)
-	;; TODO change for Embark!!!!!!!!
 	map))
 
     (add-to-list 'emulation-mode-map-alists `((my/is-minibuffer-extension-map-enabled . ,my/extended-minibuffer-keymap)))
@@ -238,10 +250,13 @@
   (evil-mode 1)
   (keymap-set evil-insert-state-map "C-g" 'evil-normal-state)
 
-  (my/set-additional-general-purpose-keybindings)
+  (advice-add 'evil-search-next :after
+              #'(lambda (&rest x) (evil-scroll-line-to-center (line-number-at-pos))))
 
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+  (advice-add 'evil-search-previous :after
+              #'(lambda (&rest x) (evil-scroll-line-to-center (line-number-at-pos))))
+
+  (my/set-additional-keybindings))
 
 (use-package evil-collection
   :after evil
@@ -294,42 +309,39 @@
   :config
   (global-diff-hl-mode))
 
-(use-package company
+(use-package corfu
   :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0)
+    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+    (corfu-preselect 'prompt)      ;; Preselect the prompt
+    (corfu-auto t)
+    (corfu-quit-no-match 'separator)
+    (corfu-preview-current 'insert)
+    (corfu-auto-prefix 2)
+    (corfu-auto-delay 0)
+    ;; initial time to show docs, time between scrolls to show docs
+    (corfu-popupinfo-delay '(0.5 . 0.2))  
   :config
-  (keymap-set company-active-map "<tab>" 'company-complete-selection)
-  (keymap-set prog-mode-map "<tab>" 'company-indent-or-complete-common)
-  (add-hook 'emacs-lisp-mode-hook #'company-mode))
-
-(use-package company-box
-  :hook (company-mode . company-box-mode))
+  (global-corfu-mode 1)
+  (corfu-history-mode 1)
+  (corfu-popupinfo-mode 1))
 
 (use-package evil-nerd-commenter
   :bind ("C-/" . evilnc-comment-or-uncomment-lines))
 
-(defun my/set-slime-repl-mode-keybindings ()
-  (evil-define-key 'normal slime-repl-mode-map
-    (kbd "C-n") 'slime-repl-forward-input
-    (kbd "C-p") 'slime-repl-backward-input)
-  (evil-define-key 'insert slime-repl-mode-map
-    (kbd "C-n") 'slime-repl-forward-input
-    (kbd "C-p") 'slime-repl-backward-input))
+(defun my/set-lisp-repl-mode-keybindings ()
+  (evil-define-key 'normal sly-mrepl-mode-map
+    (kbd "C-n") 'sly-mrepl-next-input-or-button
+    (kbd "C-p") 'sly-mrepl-previous-input-or-button)
+  (evil-define-key 'insert sly-mrepl-mode-map
+    (kbd "C-n") 'sly-mrepl-next-input-or-button
+    (kbd "C-p") 'sly-mrepl-previous-input-or-button))
 
-;; SLIME config!
-;; IMPORTANT NOTE: INSTALL COMMON LISP USING SCOOP ON WINDOWS
-(use-package slime
-  :after evil
+(use-package sly
+  :commands (sly sly-connect)
+  :init
+  (setq inferior-lisp-program "sbcl")
   :config
-  (slime-setup '(slime-fancy slime-company))
-  (my/set-slime-repl-mode-keybindings))
-
-(use-package slime-company
-  :after (slime company)
-  :config
-  (setq slime-company-display-arglist t)
-  (setq inferior-lisp-program "sbcl"))
+  (my/set-lisp-repl-mode-keybindings))
 
 (use-package clojure-mode)
 
@@ -362,6 +374,14 @@
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-center-content t)
   (setq dashboard-vertically-center-content t)
+  (setq dashboard-startupify-list (list #'dashboard-insert-banner
+					#'dashboard-insert-newline
+					#'dashboard-insert-banner-title
+					#'dashboard-insert-newline
+					#'dashboard-insert-init-info
+					#'dashboard-insert-items
+					#'dashboard-insert-newline))
+  
   :config
   (dashboard-setup-startup-hook))
 
