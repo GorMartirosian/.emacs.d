@@ -202,11 +202,7 @@
   :custom
   (consult-mode 1)
   :config
-  (global-set-key (kbd "C-x b") #'consult-buffer)
-  ;; (global-set-key (kbd "C-F") #'consult-grep) TODO
-  ;; also add C-N and C-P for vertico next/previous group ?
-  ;; also add C-d to delete a buffer
-  )
+  (global-set-key (kbd "C-x b") #'consult-buffer))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -230,15 +226,19 @@
 	(define-key map (kbd "C-p") #'vertico-previous)
 	map))
 
+    (defvar my/extended-global-keymap
+      (let ((map (make-sparse-keymap)))
+	(define-key map (kbd "C-F") #'consult-grep)
+	map))
+
     (add-to-list 'emulation-mode-map-alists `((my/is-minibuffer-extension-map-enabled . ,my/extended-minibuffer-keymap)))
+    (add-to-list 'emulation-mode-map-alists `((t . ,my/extended-global-keymap)))
 
     (add-hook 'minibuffer-setup-hook
 	      #'(lambda ()
 		  (setq-local my/is-minibuffer-extension-map-enabled t))))
 
-  (define-prefix-command 'my/evil-insert-C-w-map)
-  (define-key evil-insert-state-map (kbd "C-w") 'my/evil-insert-C-w-map)
-  (define-key my/evil-insert-C-w-map (kbd "C-w") #'evil-window-next))
+  (define-key evil-insert-state-map (kbd "C-w") 'evil-window-map))
 
 (use-package evil
   :init
@@ -312,7 +312,7 @@
 (use-package corfu
   :custom
     (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-preselect 'prompt)      ;; Preselect the prompt
+    (corfu-preselect 'first)      ;; Preselect the prompt
     (corfu-auto t)
     (corfu-quit-no-match 'separator)
     (corfu-preview-current 'insert)
@@ -409,8 +409,9 @@
 ;; Machine specific: do not forget to install the LSP servers.
 (use-package eglot
   :after (clojure-mode)
-  :init (setopt eglot-autoshutdown t)
-  :hook ((clojure-mode . eglot-ensure)))
-
-(use-package xref
-  :demand t)
+  :init
+  (setopt eglot-autoshutdown t)
+  :config
+  (add-hook 'clojure-mode-hook 'eglot-ensure)
+  (add-hook 'c-mode-hook 'eglot-ensure)
+  (add-hook 'c++-mode-hook 'eglot-ensure))
