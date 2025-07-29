@@ -13,8 +13,6 @@
 
 (use-package emacs
   :custom
-  ;; Enable mouse right click in buffer
-  (context-menu-mode t)
   (enable-recursive-minibuffers t)
   (minibuffer-depth-indicate-mode 1)
 
@@ -414,4 +412,5 @@
   :config
   (add-hook 'clojure-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'c++-mode-hook 'eglot-ensure))
+  (add-hook 'c++-mode-hook 'eglot-ensure)
+  (add-hook 'python-mode-hook 'eglot-ensure))
