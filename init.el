@@ -216,6 +216,21 @@
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
+  (defun my/evil-scroll-down-and-center ()
+    "Scroll down and center the cursor."
+    (interactive)
+    (evil-scroll-down nil)
+    (recenter))
+
+  (defun my/evil-scroll-up-and-center ()
+    "Scroll up and center the cursor."
+    (interactive)
+    (evil-scroll-up nil)
+    (recenter))
+  
+  (define-key evil-normal-state-map (kbd "C-d") #'my/evil-scroll-down-and-center)
+  (define-key evil-normal-state-map (kbd "C-u") #'my/evil-scroll-up-and-center)
+  
   (with-eval-after-load 'vertico
 
     (defvar my/extended-minibuffer-keymap
